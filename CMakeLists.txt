@@ -7,6 +7,10 @@ find_package(Qt6 REQUIRED COMPONENTS
     Qml
 )
 
+option(BUILD_SFPM_PIC "Build with -fPIC" OFF)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SFPM_PIC})
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # This is to find generated *.moc and *.h files in build dir
 
