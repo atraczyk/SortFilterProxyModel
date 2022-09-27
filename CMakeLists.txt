@@ -50,6 +50,7 @@ add_library(SortFilterProxyModel OBJECT
 
 if ((MSVC) AND (MSVC_VERSION GREATER_EQUAL 1914))
     target_compile_options(SortFilterProxyModel PUBLIC "/Zc:__cplusplus")
+    target_compile_options(SortFilterProxyModel PUBLIC "/permissive-")
 endif()
 
 target_include_directories(SortFilterProxyModel PUBLIC
