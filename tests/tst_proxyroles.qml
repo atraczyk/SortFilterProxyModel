@@ -41,7 +41,8 @@ Item {
             },
             SourceIndexRole {
                 name: "sourceIndexRole"
-            }
+            },
+            MultiRole {}
         ]
     }
 
@@ -51,6 +52,32 @@ Item {
         QtObject {
             property string staticRole: model.staticRole
             property int sourceIndexRole: model.sourceIndexRole
+        }
+    }
+
+    ListModel {
+        id: singleRowModel
+        ListElement {
+            changingRole: "Change me"
+            otherRole: "I don't change"
+        }
+    }
+
+    SortFilterProxyModel {
+        id: noProxyRolesProxyModel
+        sourceModel: singleRowModel
+    }
+
+    Instantiator {
+        id: outerInstantiator
+        model: noProxyRolesProxyModel
+        QtObject {
+            property var counter: ({ count : 0 })
+            property string changingRole: model.changingRole
+            property string otherRole: {
+                ++counter.count;
+                return model.otherRole;
+            }
         }
     }
 
@@ -79,8 +106,21 @@ Item {
 
         function test_filterFromProxyRole() {
             staticRole.value = "filterMe";
-            compare(testModel.count, 0)
+            compare(testModel.count, 0);
             staticRole.value = "foo";
+            compare(testModel.count, 3);
+        }
+
+        function test_multiRole() {
+            compare(testModel.get(0, "role1"), "data for role1");
+            compare(testModel.get(0, "role2"), "data for role2");
+        }
+
+        function test_ProxyRolesDataChanged() {
+            outerInstantiator.object.counter.count = 0;
+            singleRowModel.setProperty(0, "changingRole", "Changed")
+            compare(outerInstantiator.object.changingRole, "Changed");
+            compare(outerInstantiator.object.counter.count, 0);
         }
     }
 }

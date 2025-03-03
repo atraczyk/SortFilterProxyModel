@@ -12,7 +12,8 @@ Install
 
 ##### Without qpm :
 1. clone or download this repository
-2. add `include  (<path/to/SortFilterProxyModel>/SortFilterProxyModel.pri)` in your `.pro`
+2. * `qmake` add `include  (<path/to/SortFilterProxyModel>/SortFilterProxyModel.pri)` in your `.pro`
+   * `CMake` add $<TARGET_OBJECTS:SortFilterProxyModel> to the sources of your executable target in your cmake project
 3. `import SortFilterProxyModel 0.2` to use this library in your QML files
 
 Sample Usage
@@ -95,9 +96,17 @@ Here the `ListView` will only show elements that contains the content of the `Te
             StringSorter { roleName: "lastName" }
         ]
     }
+
+    CheckBox {
+        id:onlyShowFavoritesCheckbox
+    }
 ```
 This will show in the corresponding `ListView` only the elements where the `firstName` or the `lastName` match the text entered in the `textField`, and if the `onlyShowFavoritesCheckbox` is checked it will aditionnally filter the elements where `favorite` is `true`.
 The favorited elements will be shown first and all the elements are sorted by `firstName` and then `lastName`.
+
+Showcase Application
+--------------------
+You can find an application showcasing this library here: https://github.com/oKcerG/SFPMShowcase
 
 License
 -------

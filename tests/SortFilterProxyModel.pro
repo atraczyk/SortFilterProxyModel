@@ -26,4 +26,11 @@ OTHER_FILES += \
     tst_proxyroles.qml \
     tst_joinrole.qml \
     tst_switchrole.qml \
-    tst_expressionrole.qml
+    tst_expressionrole.qml \
+    tst_filtercontainerattached.qml \
+    tst_filtercontainers.qml \
+    tst_regexprole.qml \
+    tst_filtersorter.qml \
+    tst_filterrole.qml \
+    tst_delayed.qml \
+    tst_sortercontainerattached.qml
