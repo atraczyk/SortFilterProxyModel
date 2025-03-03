@@ -76,9 +76,9 @@ QVariant ExpressionRole::data(const QModelIndex& sourceIndex, const QQmlSortFilt
 
         for (auto it = roles.cbegin(); it != roles.cend(); ++it)
             addToContext(it.value(), proxyModel.sourceData(sourceIndex, it.key()));
-        addToContext("index", sourceIndex.row());
+        addToContext(QStringLiteral("index"), sourceIndex.row());
 
-        context.setContextProperty("model", modelMap);
+        context.setContextProperty(QStringLiteral("model"), modelMap);
 
         QQmlExpression expression(m_scriptString, &context);
         QVariant result = expression.evaluate();
@@ -89,7 +89,7 @@ QVariant ExpressionRole::data(const QModelIndex& sourceIndex, const QQmlSortFilt
         }
         return result;
     }
-    return QVariant();
+    return {};
 }
 
 void ExpressionRole::updateContext(const QQmlSortFilterProxyModel& proxyModel)
@@ -104,12 +104,13 @@ void ExpressionRole::updateContext(const QQmlSortFilterProxyModel& proxyModel)
         modelMap.insert(name, value);
     };
 
-    for (const QByteArray& roleName : proxyModel.roleNames().values())
+    const auto roleNames = proxyModel.roleNames();
+    for (const QByteArray& roleName : roleNames)
         addToContext(roleName, QVariant());
 
-    addToContext("index", -1);
+    addToContext(QStringLiteral("index"), -1);
 
-    m_context->setContextProperty("model", modelMap);
+    m_context->setContextProperty(QStringLiteral("model"), modelMap);
     updateExpression();
 }
 
@@ -119,7 +120,7 @@ void ExpressionRole::updateExpression()
         return;
 
     delete m_expression;
-    m_expression = new QQmlExpression(m_scriptString, m_context, 0, this);
+    m_expression = new QQmlExpression(m_scriptString, m_context, nullptr, this);
     connect(m_expression, &QQmlExpression::valueChanged, this, &ExpressionRole::invalidate);
     m_expression->setNotifyOnValueChanged(true);
     m_expression->evaluate();

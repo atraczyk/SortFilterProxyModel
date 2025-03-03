@@ -50,7 +50,7 @@ QVariant SwitchRoleAttached::value() const
     return m_value;
 }
 
-void SwitchRoleAttached::setValue(QVariant value)
+void SwitchRoleAttached::setValue(const QVariant &value)
 {
     if (m_value == value)
         return;
@@ -113,7 +113,7 @@ void SwitchRole::setDefaultValue(const QVariant& defaultValue)
 
 void SwitchRole::proxyModelCompleted(const QQmlSortFilterProxyModel& proxyModel)
 {
-    for (Filter* filter : m_filters)
+    for (Filter* filter : qAsConst(m_filters))
         filter->proxyModelCompleted(proxyModel);
 }
 
@@ -124,7 +124,7 @@ SwitchRoleAttached* SwitchRole::qmlAttachedProperties(QObject* object)
 
 QVariant SwitchRole::data(const QModelIndex &sourceIndex, const QQmlSortFilterProxyModel &proxyModel)
 {
-    for (auto filter: m_filters) {
+    for (auto filter: qAsConst(m_filters)) {
         if (!filter->enabled())
             continue;
         if (filter->filterAcceptsRow(sourceIndex, proxyModel)) {

@@ -12,7 +12,7 @@
 namespace qqsfpm {
 
 void registerFiltersTypes() {
-    qmlRegisterUncreatableType<Filter>("SortFilterProxyModel", 0, 2, "Filter", "Filter is an abstract class");
+    qmlRegisterUncreatableType<Filter>("SortFilterProxyModel", 0, 2, "Filter", QStringLiteral("Filter is an abstract class"));
     qmlRegisterType<ValueFilter>("SortFilterProxyModel", 0, 2, "ValueFilter");
     qmlRegisterType<IndexFilter>("SortFilterProxyModel", 0, 2, "IndexFilter");
     qmlRegisterType<RegExpFilter>("SortFilterProxyModel", 0, 2, "RegExpFilter");
@@ -20,7 +20,7 @@ void registerFiltersTypes() {
     qmlRegisterType<ExpressionFilter>("SortFilterProxyModel", 0, 2, "ExpressionFilter");
     qmlRegisterType<AnyOfFilter>("SortFilterProxyModel", 0, 2, "AnyOf");
     qmlRegisterType<AllOfFilter>("SortFilterProxyModel", 0, 2, "AllOf");
-    qmlRegisterUncreatableType<FilterContainerAttached>("SortFilterProxyModel", 0, 2, "FilterContainer", "FilterContainer can only be used as an attaching type");
+    qmlRegisterUncreatableType<FilterContainerAttached>("SortFilterProxyModel", 0, 2, "FilterContainer", QStringLiteral("FilterContainer can only be used as an attaching type"));
 }
 
 Q_COREAPP_STARTUP_FUNCTION(registerFiltersTypes)

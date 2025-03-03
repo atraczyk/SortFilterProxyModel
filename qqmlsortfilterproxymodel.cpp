@@ -191,11 +191,11 @@ void QQmlSortFilterProxyModel::componentComplete()
 {
     m_completed = true;
 
-    for (const auto& filter : m_filters)
+    for (const auto& filter : qAsConst(m_filters))
         filter->proxyModelCompleted(*this);
-    for (const auto& sorter : m_sorters)
+    for (const auto& sorter : qAsConst(m_sorters))
         sorter->proxyModelCompleted(*this);
-    for (const auto& proxyRole : m_proxyRoles)
+    for (const auto& proxyRole : qAsConst(m_proxyRoles))
         proxyRole->proxyModelCompleted(*this);
 
     invalidate();
@@ -213,8 +213,8 @@ QVariant QQmlSortFilterProxyModel::sourceData(const QModelIndex &sourceIndex, in
     QPair<ProxyRole*, QString> proxyRolePair = m_proxyRoleMap[role];
     if (ProxyRole* proxyRole = proxyRolePair.first)
         return proxyRole->roleData(sourceIndex, *this, proxyRolePair.second);
-    else
-        return sourceModel()->data(sourceIndex, role);
+
+    return sourceModel()->data(sourceIndex, role);
 }
 
 QVariant QQmlSortFilterProxyModel::data(const QModelIndex &index, int role) const
@@ -249,7 +249,7 @@ QVariantMap QQmlSortFilterProxyModel::get(int row) const
     QVariantMap map;
     QModelIndex modelIndex = index(row, 0);
     QHash<int, QByteArray> roles = roleNames();
-    for (QHash<int, QByteArray>::const_iterator it = roles.begin(); it != roles.end(); ++it)
+    for (auto it = roles.cbegin(); it != roles.cend(); ++it)
         map.insert(it.value(), data(modelIndex, it.key()));
     return map;
 }
@@ -322,7 +322,7 @@ bool QQmlSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelInde
     bool valueAccepted = !m_filterValue.isValid() || ( m_filterValue == sourceModel()->data(sourceIndex, filterRole()) );
     bool baseAcceptsRow = valueAccepted && QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
     baseAcceptsRow = baseAcceptsRow && std::all_of(m_filters.begin(), m_filters.end(),
-        [=, &source_parent] (Filter* filter) {
+        [=] (Filter* filter) {
             return filter->filterAcceptsRow(sourceIndex, *this);
         }
     );
@@ -363,10 +363,48 @@ void QQmlSortFilterProxyModel::resetInternalData()
 
 void QQmlSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
-    if (sourceModel && sourceModel->roleNames().isEmpty()) { // workaround for when a model has no roles and roles are added when the model is populated (ListModel)
-        // QTBUG-57971
-        connect(sourceModel, &QAbstractItemModel::rowsInserted, this, &QQmlSortFilterProxyModel::initRoles);
+    // QML built-in type ListModel behaves in a specific way regarding roles
+    // initialization (QTBUG-57971). Empty model has no roles, they become
+    // available after first insertion. However modelAboutToBeReset/modelReset
+    // is not emited. It means that roles may change not only in between model
+    // resets but also on the first insertion.
+    // In a simple case, where ListModel (or other model behaving in that way)
+    // is direct source of SFPM, situation is relatively simple - if source
+    // has no roles, SFPM should try to initialize them on first insertion
+    // However this behavior has far-reaching consequences, because the
+    // ListModel-like model may not be a direct source for SFPM. E.g. there may
+    // by another SFPM in between, with proxy roles defined:
+    //
+    // ListModel -> SFPM 1 (with proxy roles) -> SFPM 2
+    //
+    // In such scenario SFPM 2 will always have model with roles as it's source
+    // (at least proxy roles). It means that on first insertion right after
+    // SFPM creation or after source model reset it's necessary to re-initialize
+    // role names if the source was empty before insertion.
+
+    if (this->sourceModel() == sourceModel)
+        return;
+
+    if (auto currentSource = this->sourceModel()) {
+        disconnect(currentSource, &QAbstractItemModel::rowsInserted, this,
+                   &QQmlSortFilterProxyModel::initRoles);
+        disconnect(currentSource, &QAbstractItemModel::modelReset, this, nullptr);
     }
+
+    if (sourceModel && sourceModel->rowCount() == 0)
+        connect(sourceModel, &QAbstractItemModel::rowsInserted, this,
+                &QQmlSortFilterProxyModel::initRoles, Qt::UniqueConnection);
+
+    if (sourceModel) {
+        connect(sourceModel, &QAbstractItemModel::modelReset, this, [sourceModel, this]() {
+            if (sourceModel->rowCount() != 0)
+                return;
+
+            connect(sourceModel, &QAbstractItemModel::rowsInserted, this,
+                    &QQmlSortFilterProxyModel::initRoles, Qt::UniqueConnection);
+        });
+    }
+
     QSortFilterProxyModel::setSourceModel(sourceModel);
 }
 
@@ -419,8 +457,9 @@ void QQmlSortFilterProxyModel::updateRoleNames()
     auto roles = m_roleNames.keys();
     auto maxIt = std::max_element(roles.cbegin(), roles.cend());
     int maxRole = maxIt != roles.cend() ? *maxIt : -1;
-    for (auto proxyRole : m_proxyRoles) {
-        for (auto roleName : proxyRole->names()) {
+    for (auto proxyRole : qAsConst(m_proxyRoles)) {
+        const auto proxyRoleNames = proxyRole->names();
+        for (const auto &roleName : proxyRoleNames) {
             ++maxRole;
             m_roleNames[maxRole] = roleName.toUtf8();
             m_proxyRoleMap[maxRole] = {proxyRole, roleName};
@@ -492,7 +531,7 @@ QVariantMap QQmlSortFilterProxyModel::modelDataMap(const QModelIndex& modelIndex
 {
     QVariantMap map;
     QHash<int, QByteArray> roles = roleNames();
-    for (QHash<int, QByteArray>::const_iterator it = roles.begin(); it != roles.end(); ++it)
+    for (auto it = roles.cbegin(); it != roles.cend(); ++it)
         map.insert(it.value(), sourceModel()->data(modelIndex, it.key()));
     return map;
 }

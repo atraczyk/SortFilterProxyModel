@@ -28,7 +28,7 @@ Q_SIGNALS:
 private:
     QStringList m_roleNames;
     QVariant data(const QModelIndex& sourceIndex, const QQmlSortFilterProxyModel& proxyModel) override;
-    QString m_separator = " ";
+    QString m_separator = QStringLiteral(" ");
 };
 
 }

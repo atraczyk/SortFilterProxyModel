@@ -4,7 +4,7 @@ namespace qqsfpm {
 
 void FilterContainerFilter::proxyModelCompleted(const QQmlSortFilterProxyModel& proxyModel)
 {
-    for (Filter* filter : m_filters)
+    for (Filter* filter : qAsConst(m_filters))
         filter->proxyModelCompleted(proxyModel);
 }
 

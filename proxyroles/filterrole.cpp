@@ -55,7 +55,7 @@ void FilterRole::onFiltersCleared()
 
 QVariant FilterRole::data(const QModelIndex& sourceIndex, const QQmlSortFilterProxyModel& proxyModel)
 {
-    return std::all_of(m_filters.begin(), m_filters.end(),
+    return std::all_of(m_filters.cbegin(), m_filters.cend(),
         [&] (Filter* filter) {
             return filter->filterAcceptsRow(sourceIndex, proxyModel);
         }

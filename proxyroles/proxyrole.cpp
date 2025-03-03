@@ -1,11 +1,4 @@
 #include "proxyrole.h"
-#include <QQmlEngine>
-#include <QQmlContext>
-#include <QQmlExpression>
-#include <QCoreApplication>
-#include <QDebug>
-#include <QQmlInfo>
-#include "filters/filter.h"
 #include "qqmlsortfilterproxymodel.h"
 
 namespace qqsfpm {
@@ -28,9 +21,8 @@ QVariant ProxyRole::roleData(const QModelIndex& sourceIndex, const QQmlSortFilte
         QVariant result = data(sourceIndex, proxyModel, name);
         m_mutex.unlock();
         return result;
-    } else {
-        return {};
     }
+    return {};
 }
 
 void ProxyRole::proxyModelCompleted(const QQmlSortFilterProxyModel &proxyModel)

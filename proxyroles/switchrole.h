@@ -3,7 +3,6 @@
 
 #include "singlerole.h"
 #include "filters/filtercontainer.h"
-#include <QtQml>
 
 namespace qqsfpm {
 
@@ -15,7 +14,7 @@ public:
     SwitchRoleAttached(QObject* parent);
 
     QVariant value() const;
-    void setValue(QVariant value);
+    void setValue(const QVariant &value);
 
 Q_SIGNALS:
     void valueChanged();

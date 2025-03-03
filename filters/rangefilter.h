@@ -18,12 +18,12 @@ public:
     using RoleFilter::RoleFilter;
 
     QVariant minimumValue() const;
-    void setMinimumValue(QVariant minimumValue);
+    void setMinimumValue(const QVariant &minimumValue);
     bool minimumInclusive() const;
     void setMinimumInclusive(bool minimumInclusive);
 
     QVariant maximumValue() const;
-    void setMaximumValue(QVariant maximumValue);
+    void setMaximumValue(const QVariant &maximumValue);
     bool maximumInclusive() const;
     void setMaximumInclusive(bool maximumInclusive);
 

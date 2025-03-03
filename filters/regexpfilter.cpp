@@ -35,9 +35,10 @@ namespace qqsfpm {
 
     \sa syntax
 */
-RegExpFilter::RegExpFilter() :
-    m_caseSensitivity(m_regExp.patternOptions().testFlag(
-        QRegularExpression::CaseInsensitiveOption) ? Qt::CaseInsensitive : Qt::CaseSensitive)
+RegExpFilter::RegExpFilter(QObject *parent)
+    : RoleFilter(parent), m_caseSensitivity(
+          m_regExp.patternOptions().testFlag(
+              QRegularExpression::CaseInsensitiveOption) ? Qt::CaseInsensitive : Qt::CaseSensitive)
 {
 }
 
@@ -52,8 +53,35 @@ void RegExpFilter::setPattern(const QString& pattern)
         return;
 
     m_pattern = pattern;
-    m_regExp.setPattern(pattern);
+    updatePattern();
+
     Q_EMIT patternChanged();
+    invalidate();
+}
+
+/*!
+    \qmlproperty enum RegExpFilter::syntax
+    The pattern used to filter the contents of the source model.
+    Only the source model's value having their \l RoleFilter::roleName data matching this \l pattern with the specified \l syntax will be kept.
+    \value RegExpFilter.RegExp A rich Perl-like pattern matching syntax. This is the default.
+    \value RegExpFilter.Wildcard This provides a simple pattern matching syntax similar to that used by shells (command interpreters) for "file globbing".
+    \value RegExpFilter.FixedString The pattern is a fixed string. This is equivalent to using the RegExp pattern on a string in which all metacharacters are escaped.
+    \sa pattern
+*/
+RegExpFilter::PatternSyntax RegExpFilter::syntax() const
+{
+    return m_syntax;
+}
+
+void RegExpFilter::setSyntax(RegExpFilter::PatternSyntax syntax)
+{
+    if (m_syntax == syntax)
+        return;
+
+    m_syntax = syntax;
+    updatePattern();
+
+    Q_EMIT syntaxChanged();
     invalidate();
 }
 
@@ -85,6 +113,16 @@ bool RegExpFilter::filterRow(const QModelIndex& sourceIndex, const QQmlSortFilte
 {
     const QString string = sourceData(sourceIndex, proxyModel).toString();
     return m_regExp.match(string).hasMatch();
+}
+
+void RegExpFilter::updatePattern()
+{
+    if (m_syntax == PatternSyntax::FixedString)
+        m_regExp.setPattern(QRegularExpression::escape(m_pattern));
+    else if (m_syntax == PatternSyntax::Wildcard)
+        m_regExp.setPattern(QRegularExpression::wildcardToRegularExpression(m_pattern));
+    else
+        m_regExp.setPattern(m_pattern);
 }
 
 }

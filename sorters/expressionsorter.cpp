@@ -92,20 +92,20 @@ int ExpressionSorter::compare(const QModelIndex& sourceLeft, const QModelIndex& 
             modelLeftMap.insert(it.value(), proxyModel.sourceData(sourceLeft, it.key()));
             modelRightMap.insert(it.value(), proxyModel.sourceData(sourceRight, it.key()));
         }
-        modelLeftMap.insert("index", sourceLeft.row());
-        modelRightMap.insert("index", sourceRight.row());
+        modelLeftMap.insert(QStringLiteral("index"), sourceLeft.row());
+        modelRightMap.insert(QStringLiteral("index"), sourceRight.row());
 
         QQmlExpression expression(m_scriptString, &context);
 
-        context.setContextProperty("modelLeft", modelLeftMap);
-        context.setContextProperty("modelRight", modelRightMap);
+        context.setContextProperty(QStringLiteral("modelLeft"), modelLeftMap);
+        context.setContextProperty(QStringLiteral("modelRight"), modelRightMap);
         if (evaluateBoolExpression(expression))
-                return -1;
+            return -1;
 
-        context.setContextProperty("modelLeft", modelRightMap);
-        context.setContextProperty("modelRight", modelLeftMap);
+        context.setContextProperty(QStringLiteral("modelLeft"), modelRightMap);
+        context.setContextProperty(QStringLiteral("modelRight"), modelLeftMap);
         if (evaluateBoolExpression(expression))
-                return 1;
+            return 1;
     }
     return 0;
 }
@@ -118,15 +118,16 @@ void ExpressionSorter::updateContext(const QQmlSortFilterProxyModel& proxyModel)
     QVariantMap modelLeftMap, modelRightMap;
     // what about roles changes ?
 
-    for (const QByteArray& roleName : proxyModel.roleNames().values()) {
+    const auto roleNames = proxyModel.roleNames();
+    for (const QByteArray& roleName : roleNames) {
         modelLeftMap.insert(roleName, QVariant());
         modelRightMap.insert(roleName, QVariant());
     }
-    modelLeftMap.insert("index", -1);
-    modelRightMap.insert("index", -1);
+    modelLeftMap.insert(QStringLiteral("index"), -1);
+    modelRightMap.insert(QStringLiteral("index"), -1);
 
-    m_context->setContextProperty("modelLeft", modelLeftMap);
-    m_context->setContextProperty("modelRight", modelRightMap);
+    m_context->setContextProperty(QStringLiteral("modelLeft"), modelLeftMap);
+    m_context->setContextProperty(QStringLiteral("modelRight"), modelRightMap);
 
     updateExpression();
 }
@@ -137,7 +138,7 @@ void ExpressionSorter::updateExpression()
         return;
 
     delete m_expression;
-    m_expression = new QQmlExpression(m_scriptString, m_context, 0, this);
+    m_expression = new QQmlExpression(m_scriptString, m_context, nullptr, this);
     connect(m_expression, &QQmlExpression::valueChanged, this, &ExpressionSorter::invalidate);
     m_expression->setNotifyOnValueChanged(true);
     m_expression->evaluate();

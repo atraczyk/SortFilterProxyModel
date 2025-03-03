@@ -3,6 +3,11 @@ SortFilterProxyModel
 
 SortFilterProxyModel is an implementation of `QSortFilterProxyModel` conveniently exposed for QML.
 
+This is a fork that combines the Qt6 support of
+[MenloSystems/SortFilterProxyModel](https://github.com/MenloSystems/SortFilterProxyModel) and
+[RaymiiOrg/SortFilterProxyModel](https://github.com/RaymiiOrg/SortFilterProxyModel)
+with a custom fixes and improvements. The library is intended to work on both Qt 5 and 6.
+
 Install
 -------
 ##### With [qpm](https://qpm.io) :

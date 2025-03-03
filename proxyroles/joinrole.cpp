@@ -71,7 +71,7 @@ QVariant JoinRole::data(const QModelIndex &sourceIndex, const QQmlSortFilterProx
 {
     QString result;
 
-    for (const QString& roleName : m_roleNames)
+    for (const QString& roleName : qAsConst(m_roleNames))
         result += proxyModel.sourceData(sourceIndex, roleName).toString() + m_separator;
 
     if (!m_roleNames.isEmpty())
