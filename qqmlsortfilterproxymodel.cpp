@@ -385,8 +385,14 @@ void QQmlSortFilterProxyModel::queueInvalidateFilter()
 void QQmlSortFilterProxyModel::invalidateFilter()
 {
     m_invalidateFilterQueued = false;
-    if (m_completed && !m_invalidateQueued)
+    if (m_completed && !m_invalidateQueued) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+        beginFilterChange();
+        endFilterChange();
+#else
         QSortFilterProxyModel::invalidateFilter();
+#endif
+    }
 }
 
 void QQmlSortFilterProxyModel::queueInvalidate()
